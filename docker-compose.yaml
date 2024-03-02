@@ -1,0 +1,45 @@
+version: "3.3"
+services:
+  database:
+    image: mysql:5.7
+    container_name: fullcycle-mysql
+    restart: always
+    tty: true
+    environment:
+      MYSQL_DATABASE: "db"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "password"
+      MYSQL_ROOT_PASSWORD: "password"
+    volumes:
+      - "./.mysql/db:/var/lib/mysql"
+    networks:
+      - nginx-network
+  app:
+    build:
+      context: node
+    container_name: app
+    entrypoint: dockerize -wait tcp://database:3306 -timeout 20s docker-entrypoint.sh
+    volumes:
+      - ./node:/usr/src/app
+    tty: true
+    ports:
+      - 3000:3000
+    command: node index.js
+    networks:
+      - nginx-network
+    depends_on:
+      - database
+  nginx:
+    restart: always
+    build:
+      context: nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - app
+    networks:
+      - nginx-network
+
+networks:
+  nginx-network:
+    driver: bridge
