@@ -21,10 +21,11 @@ services:
     entrypoint: dockerize -wait tcp://database:3306 -timeout 20s docker-entrypoint.sh
     volumes:
       - ./node:/usr/src/app
+      - /usr/src/app/node_modules
     tty: true
     ports:
       - 3000:3000
-    command: node index.js
+    command: npm start
     networks:
       - nginx-network
     depends_on:
